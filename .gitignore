@@ -1,0 +1,9 @@
+src/media
+src/.env
+.env
+service_accounts.json
+src/backend/**/migrations/__pycache__/
+src/backend/__pycache__/
+src/backend/**/__pycache__/
+*.pyc
+db.py
