@@ -5,5 +5,6 @@ service_accounts.json
 src/backend/**/migrations/__pycache__/
 src/backend/__pycache__/
 src/backend/**/__pycache__/
+src/backend/static/
 *.pyc
 db.py
