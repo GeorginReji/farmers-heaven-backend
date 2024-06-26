@@ -85,8 +85,9 @@ TEMPLATES = [
 ]
 
 CRONJOBS = [
-    (config("CRON_AUTO_INSPECTION_TIME"), 'backend.admin_settings.crons.inspection_fix_cron', '>> /tmp/inspection_fix_cron.log 2>&1'),
-    ]
+    (config("CRON_AUTO_INSPECTION_TIME"), 'backend.admin_settings.crons.inspection_fix_cron',
+     '>> /tmp/inspection_fix_cron.log 2>&1'),
+]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -265,3 +266,8 @@ logging.config.dictConfig({
         },
     },
 })
+
+# oauth credentials
+GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = config('GOOGLE_CLIENT_SECRET')
+FRONTEND_CALLBACK_URL = DOMAIN + "/callback"
