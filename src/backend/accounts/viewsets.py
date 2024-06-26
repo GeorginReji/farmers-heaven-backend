@@ -1,19 +1,24 @@
 import logging
+import json
 from datetime import datetime, date, timedelta
 from functools import partial
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import signing
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import redirect
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
 from rest_framework.decorators import action
 
+from .oauth import AuthOAuth
 from .filters import UserBasicFilter
-from .models import PasswordResetCode, OTPLogin
+from .models import PasswordResetCode, OTPLogin, User
 from .permissions import UserPermissions
 from .serializers import UserSerializer, PasswordResetSerializer, UserBasicDataSerializer, UserRegistrationSerializer, \
     UserRegisterSerializer
@@ -53,17 +58,67 @@ class UserViewSet(ModelViewSet):
         operation_description='Post login credential to log in and get a login session token.',
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
-            properties={
-                'username': openapi.Schema(type=openapi.TYPE_STRING, description="mobile/email/employee_code"),
-                'password': openapi.Schema(type=openapi.TYPE_STRING, description=""),
-            }),
+            properties={}
+        ),
         responses={
-            200: SawaggerResponseSerializer(data={'message': 'Logged In'}, partial=True)
+            307: SawaggerResponseSerializer(partial=True)
         }
     )
     @action(detail=False, methods=['POST'])
-    def login(self, request):
-        return auth_login(request)
+    def oauth_start(self, request):
+        authorize_url = AuthOAuth.make_authorize_url()
+        return redirect(authorize_url)
+
+    @swagger_auto_schema(
+        method="get",
+        operation_summary='OAuth Callback',
+        operation_description='Handle the OAuth callback from Google.',
+        manual_parameters=[
+            openapi.Parameter('code', openapi.IN_QUERY, description="code for verifying the oauth login",
+                              type=openapi.TYPE_STRING),
+            openapi.Parameter('state', openapi.IN_QUERY, description="state containing provider information",
+                              type=openapi.TYPE_STRING),
+        ],
+        responses={
+            302: 'Redirect with token',
+            400: 'Bad Request',
+            404: 'Not Found',
+            500: 'Internal Server Error',
+        }
+    )
+    @action(detail=False, methods=['GET'], url_path='oauth-callback')
+    def oauth_callback(self, request):
+        code = request.GET.get("code")
+        if not code or code.strip() == "":
+            return self.prepare_response(status_code=status.HTTP_400_BAD_REQUEST,
+                                         error_msg="missing or empty authorization code")
+
+        user_info = AuthOAuth.validate_code(code)
+        email = user_info.get('email')
+        user_obj = User.objects.filter(email=email, is_active=True).first()
+        if not user_obj:
+            user_obj = User.objects.create(email=email)
+
+        header_data = generate_auth_data(request, user_obj)
+        header_data["id"] = user_obj.id
+        header_data["email_id"] = user_obj.email
+        return self.prepare_response(status_code=status.HTTP_200_OK, header_data=header_data)
+
+    @staticmethod
+    def prepare_response(status_code, error_msg=None, header_data=None):
+        frontend_url = settings.FRONTEND_CALLBACK_URL  # Make sure to set this in your Django settings
+        if error_msg:
+            redirect_url = f"{frontend_url}?error={error_msg}&status_code={status_code}"
+        else:
+            redirect_url = frontend_url
+
+        response = HttpResponseRedirect(redirect_url)
+
+        if header_data:
+            for key, value in header_data.items():
+                response[key] = str(value)
+
+        return response
 
     @action(methods=['GET'], detail=False)
     def user_clone(self, request):
@@ -147,19 +202,6 @@ class UserViewSet(ModelViewSet):
         else:
             message = {'detail': 'User for this staff does not exist'}
             return response.BadRequest(message)
-
-    @action(detail=False, methods=['GET', 'POST', 'PUT'], serializer_class=UserRegistrationSerializer)
-    def register(self, request):
-        if request.method == 'GET':
-            queryset = get_user_model().objects.filter(is_active=True)
-            self.filterset_class = UserBasicFilter
-            queryset = self.filter_queryset(queryset)
-            page = self.paginate_queryset(queryset)
-            if page is not None:
-                return self.get_paginated_response(UserRegisterSerializer(page, many=True).data)
-            return response.Ok(UserRegisterSerializer(queryset, many=True).data)
-        else:
-            return response.Ok(create_update_record(request, UserRegisterSerializer, get_user_model()))
 
     @swagger_auto_schema(
         method="post",
