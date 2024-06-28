@@ -17,11 +17,12 @@ class UserPermissions(ResourcePermission):
     metadata_perms = AllowAny()
     enough_perms = None
     global_perms = None
-    retrieve_perms = IsTheSameUser()
-    create_perms = None
-    update_perms = IsTheSameUser()
-    partial_update_perms = IsTheSameUser()
-    destroy_perms = IsTheSameUser()
+    retrieve_perms = IsSuperUser()
+    create_perms = IsSuperUser()
+    update_perms = IsSuperUser()
+    partial_update_perms = IsSuperUser()
+    destroy_perms = IsSuperUser()
+    list_perms = IsSuperUser()
     oauth_start_perms = AllowAny()
     oauth_callback_perms = AllowAny()
     login_perms = AllowAny()
