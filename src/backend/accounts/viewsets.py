@@ -1,5 +1,5 @@
 import logging
-import json
+from urllib.parse import urlencode
 from datetime import datetime, date, timedelta
 from functools import partial
 
@@ -102,21 +102,31 @@ class UserViewSet(ModelViewSet):
         header_data = generate_auth_data(request, user_obj)
         header_data["id"] = user_obj.id
         header_data["email_id"] = user_obj.email
-        return self.prepare_response(status_code=status.HTTP_200_OK, header_data=header_data)
+        return self.prepare_response(status_code=status.HTTP_200_OK, params_data=header_data)
 
     @staticmethod
-    def prepare_response(status_code, error_msg=None, header_data=None):
+    def prepare_response(status_code, error_msg=None, params_data=None):
         frontend_url = settings.FRONTEND_CALLBACK_URL  # Make sure to set this in your Django settings
+
+        # Initialize query parameters with status_code
+        query_params = {'status_code': status_code}
+
+        # Add error_msg to query parameters if provided
         if error_msg:
-            redirect_url = f"{frontend_url}?error={error_msg}&status_code={status_code}"
-        else:
-            redirect_url = frontend_url
+            query_params['error'] = error_msg
 
+        # Add additional parameters from params_data if provided
+        if params_data:
+            query_params.update(params_data)
+
+        # Create the query string from query_params
+        query_string = urlencode(query_params)
+
+        # Append the query string to the frontend URL
+        redirect_url = f"{frontend_url}?{query_string}"
+
+        # Create the HttpResponseRedirect with the modified URL
         response = HttpResponseRedirect(redirect_url)
-
-        if header_data:
-            for key, value in header_data.items():
-                response[key] = str(value)
 
         return response
 
