@@ -109,3 +109,18 @@ def get_clean_date(date):
     if date:
         return pd.to_datetime(date).strftime("%d-%m-%Y")
     return "--"
+
+
+def create_update_manytomany_record(request_data, model_class, many_queryset=None):
+    values = [record.get('id') for record in request_data if record.get('id') is not None]
+    if many_queryset:
+        for record in many_queryset.exclude(id__in=values):
+            record.is_active = False
+            record.save()
+    for record in request_data:
+        record_id = record.pop('id', None)
+        if record_id:
+            model_class.objects.filter(id=record_id).update(**record)
+        else:
+            values.append(model_class.objects.create(**record).id)
+    return values
