@@ -17,19 +17,15 @@ from rest_framework import status
 from rest_framework.decorators import action
 
 from .oauth import AuthOAuth
-from .filters import UserBasicFilter
 from .models import PasswordResetCode, OTPLogin, User
 from .permissions import UserPermissions
-from .serializers import UserSerializer, PasswordResetSerializer, UserBasicDataSerializer, UserRegistrationSerializer, \
-    UserRegisterSerializer
-from .services import auth_login, auth_password_change, _parse_data, \
-    get_user_from_email_or_mobile_or_employee_code, generate_auth_data, user_clone_api
+from .serializers import UserSerializer, PasswordResetSerializer
+from .services import auth_login, auth_password_change, _parse_data, get_user_from_email_or_mobile_or_employee_code, \
+    generate_auth_data, user_clone_api, generate_password
 
 from ..base import response
-from ..base.api.pagination import StandardResultsSetPagination
 from ..base.api.viewsets import ModelViewSet
 from ..base.serializers import SawaggerResponseSerializer
-from ..base.services import create_update_record
 from ..base.utils.sms import send_sms_without_save
 
 logger = logging.getLogger(__name__)
@@ -51,6 +47,24 @@ class UserViewSet(ModelViewSet):
         queryset = super(UserViewSet, self).get_queryset()
         queryset = queryset.filter(is_active=True)
         return queryset
+
+    @swagger_auto_schema(
+        method="post",
+        operation_summary='Login',
+        operation_description='Post login credential to log in and get a login session token.',
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description="mobile/email/employee_code"),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description=""),
+            }),
+        responses={
+            200: SawaggerResponseSerializer(data={'message': 'Logged In'}, partial=True)
+        }
+    )
+    @action(detail=False, methods=['POST'])
+    def login(self, request):
+        return auth_login(request)
 
     @swagger_auto_schema(
         method="post",
@@ -98,6 +112,8 @@ class UserViewSet(ModelViewSet):
         user_obj = User.objects.filter(email=email, is_active=True).first()
         if not user_obj:
             user_obj = User.objects.create(email=email)
+            user_obj.set_password(generate_password())
+            user_obj.save()
 
         header_data = generate_auth_data(request, user_obj)
         header_data["id"] = user_obj.id
