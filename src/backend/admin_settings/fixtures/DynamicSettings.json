@@ -1,0 +1,13 @@
+[
+  {
+    "model": "admin_settings.DynamicSettings",
+    "pk": 1,
+    "fields": {
+      "name": "Category",
+      "value": "Spices",
+      "is_active": true,
+      "created_at": "2000-03-15T10:33:28.125263Z",
+      "modified_at":"2000-03-15T10:33:28.125263Z"
+    }
+  }
+]

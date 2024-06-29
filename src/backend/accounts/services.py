@@ -172,3 +172,7 @@ def user_clone_api(user, is_admin=False, permissions=[]):
         "permissions": permissions,
     }
     return auth_data
+
+
+def generate_password():
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
