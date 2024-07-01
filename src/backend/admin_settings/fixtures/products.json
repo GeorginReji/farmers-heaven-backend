@@ -1,0 +1,105 @@
+[
+  {
+    "model": "admin_settings.products",
+    "pk": 1,
+    "fields": {
+      "created_at": "2024-06-29T10:01:00.022Z",
+      "modified_at": "2024-06-29T10:01:00.028Z",
+      "created_by": null,
+      "name": "string",
+      "description": "string",
+      "category": 1,
+      "price": 10000,
+      "stock": 20,
+      "is_active": true,
+      "images": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "model": "admin_settings.products",
+    "pk": 2,
+    "fields": {
+      "created_at": "2024-06-29T10:01:00.022Z",
+      "modified_at": "2024-06-29T10:01:00.028Z",
+      "created_by": null,
+      "name": "Pepper",
+      "description": "Fringilla option ponderum indoctum mazim homero maecenas fringilla similique accusata. Scripta sea litora adolescens principes fermentum accommodare eu propriae.em",
+      "category": 1,
+      "price": 10000,
+      "stock": 20,
+      "is_active": true,
+      "images": [
+        11,
+        12,
+        13,
+        14
+      ]
+    }
+  },
+  {
+    "model": "admin_settings.products",
+    "pk": 3,
+    "fields": {
+      "created_at": "2024-06-29T10:01:00.022Z",
+      "modified_at": "2024-06-29T10:01:00.028Z",
+      "created_by": null,
+      "name": "Turmeric",
+      "description": "Fringilla option ponderum indoctum mazim homero maecenas fringilla similique accusata. Scripta sea litora adolescens principes fermentum accommodare eu propriae.em",
+      "category": 1,
+      "price": 10000,
+      "stock": 20,
+      "is_active": true,
+      "images": [
+        3,
+        4,
+        5,
+        6
+      ]
+    }
+  },
+  {
+    "model": "admin_settings.products",
+    "pk": 4,
+    "fields": {
+      "created_at": "2024-06-29T10:01:00.022Z",
+      "modified_at": "2024-06-29T10:01:00.028Z",
+      "created_by": null,
+      "name": "Clove",
+      "description": "Fringilla option ponderum indoctum mazim homero maecenas fringilla similique accusata. Scripta sea litora adolescens principes fermentum accommodare eu propriae.em",
+      "category": 1,
+      "price": 10000,
+      "stock": 20,
+      "is_active": true,
+      "images": [
+        7,
+        8,
+        9,
+        10
+      ]
+    }
+  },
+  {
+    "model": "admin_settings.products",
+    "pk": 5,
+    "fields": {
+      "created_at": "2024-06-29T10:01:00.022Z",
+      "modified_at": "2024-06-29T10:01:00.028Z",
+      "created_by": null,
+      "name": "Cardamom",
+      "description": "Fringilla option ponderum indoctum mazim homero maecenas fringilla similique accusata. Scripta sea litora adolescens principes fermentum accommodare eu propriae.em",
+      "category": 1,
+      "price": 10000,
+      "stock": 20,
+      "is_active": true,
+      "images": [
+        15,
+        16,
+        17,
+        18
+      ]
+    }
+  }
+]

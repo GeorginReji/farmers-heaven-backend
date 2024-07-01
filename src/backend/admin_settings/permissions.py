@@ -24,7 +24,7 @@ class DynamicSettingsPermissions(ResourcePermission):
     country_perms = IsSuperUser() | AllOnlyGetPerm() | AllowAnyGetPerm()
     state_perms = IsSuperUser() | AllOnlyGetPerm() | AllowAnyGetPerm()
     city_perms = IsSuperUser() | AllOnlyGetPerm() | AllowAnyGetPerm()
-    products_perms = IsSuperUser() | AllOnlyGetPerm()
+    products_perms = IsSuperUser() | AllowAnyGetPerm()
 
 
 class UploadedDocumentPermissions(ResourcePermission):

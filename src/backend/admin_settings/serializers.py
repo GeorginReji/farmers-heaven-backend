@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import DynamicSettings, Country, State, City, UploadedDocument, Products, ProductImages
-from .services import delete_child
+from .services import delete_child, get_presigned_url
 
 from ..base.serializers import ModelSerializer
 from ..base.services import create_update_manytomany_record
@@ -133,9 +133,15 @@ class DynamicSettingsValueSerializer(ModelSerializer):
 
 
 class ProductImagesSerializer(ModelSerializer):
+    download_url = serializers.SerializerMethodField(required=False)
+
     class Meta:
         model = ProductImages
         fields = '__all__'
+
+    @staticmethod
+    def get_download_url(obj):
+        return get_presigned_url(obj.image) if obj.image else None
 
 
 class ProductsSerializer(ModelSerializer):
