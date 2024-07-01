@@ -214,13 +214,15 @@ def get_presigned_url(object_name, expiration=config('PRESIGNED_EXPIRY_SECONDS',
                              aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
                              aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY, )
     try:
+        print(expiration)
         bucket_name = settings.AWS_STORAGE_BUCKET_NAME
+        print(bucket_name, object_name)
         response = s3_client.generate_presigned_url('get_object', ExpiresIn=expiration,
                                                     Params={'Bucket': bucket_name, 'Key': object_name})
     except ClientError as e:
         logging.error(e)
         return None
-    # print(response)
+    print(response)
     response = response.split('.com/') if response else None
     return response[1] if response else ""
 

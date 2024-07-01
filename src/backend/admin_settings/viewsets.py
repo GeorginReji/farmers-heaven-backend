@@ -69,7 +69,7 @@ class UploadedDocumentViewSet(ModelViewSet):
         file_name = file_name.split('/')[-1]
         file_name = str(randint(100000, 999999)) + "_" + file_name
         object_path = 'temp/' + file_name
-        if file_type and "file" in req_data:
+        if file_type and file_name:
             return response.Ok({"url": create_presigned_url(object_path, file_type), "file_name": file_name})
         return response.BadRequest({'detail': 'Please provide name of the file'})
 
