@@ -153,6 +153,7 @@ def generate_auth_data(request, user):
     auth_data = {
         "refresh": token.get('refresh'),
         "access": token.get('access'),
+        "user": UserSerializer(instance=user, context={'request': request}).data
     }
     return auth_data
 
