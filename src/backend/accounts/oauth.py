@@ -22,7 +22,7 @@ class AuthOAuth:
         """
         try:
             scope = "email profile"
-            redirect_uri = cls.get_callback_url()
+            redirect_uri = settings.FRONTEND_CALLBACK_URL
             authorize_url = (
                 f"{GOOGLE_AUTHORIZE_URL}"
                 f"?client_id={settings.GOOGLE_CLIENT_ID}"
