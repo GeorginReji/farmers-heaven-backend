@@ -50,24 +50,16 @@ class AuthOAuth:
                 "code": code,
                 "client_id": settings.GOOGLE_CLIENT_ID,
                 "client_secret": settings.GOOGLE_CLIENT_SECRET,
-                "redirect_uri": cls.get_callback_url(),
+                "redirect_uri": settings.FRONTEND_CALLBACK_URL,
                 "grant_type": "authorization_code",
             }
 
             access_token = cls.get_access_token(data, GOOGLE_ACCESS_TOKEN_URL)
             user_info = cls.get_user_info(access_token, GOOGLE_USER_INFO_URL)
-
-            return {"email": user_info.get("email", None)}
-
+            return True, {"email": user_info.get("email", None)}
         except Exception as e:
-            raise OAuthError(str(e).lower()) from e
-
-    @staticmethod
-    def get_callback_url():
-        """
-        This method returns the OAuth callback URL.
-        """
-        return settings.DOMAIN + reverse('v1_auth-oauth-callback')
+            print(e)
+            return False, "invalid request"
 
     @staticmethod
     def get_access_token(data, token_url):

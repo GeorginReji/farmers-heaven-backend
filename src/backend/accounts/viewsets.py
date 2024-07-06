@@ -67,18 +67,14 @@ class UserViewSet(ModelViewSet):
         return auth_login(request)
 
     @swagger_auto_schema(
-        method="post",
-        operation_summary='Login',
-        operation_description='Post login credential to log in and get a login session token.',
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={}
-        ),
+        method="get",
+        operation_summary='Oauth Url',
+        operation_description='to get oauth redirect url',
         responses={
             307: SawaggerResponseSerializer(partial=True)
         }
     )
-    @action(detail=False, methods=['POST'])
+    @action(detail=False, methods=['GET'])
     def oauth_start(self, request):
         authorize_url = AuthOAuth.make_authorize_url()
         return redirect(authorize_url)
@@ -104,47 +100,21 @@ class UserViewSet(ModelViewSet):
     def oauth_callback(self, request):
         code = request.GET.get("code")
         if not code or code.strip() == "":
-            return self.prepare_response(status_code=status.HTTP_400_BAD_REQUEST,
-                                         error_msg="missing or empty authorization code")
+            return response.BadRequest({"detail": "missing or empty authorization code"})
 
-        user_info = AuthOAuth.validate_code(code)
-        email = user_info.get('email')
+        is_success, detail = AuthOAuth.validate_code(code)
+        if not is_success:
+            return response.BadRequest({"detail": detail})
+
+        email = detail.get('email')
         user_obj = User.objects.filter(email=email, is_active=True).first()
         if not user_obj:
             user_obj = User.objects.create(email=email)
             user_obj.set_password(generate_password())
             user_obj.save()
 
-        header_data = generate_auth_data(request, user_obj)
-        header_data["id"] = user_obj.id
-        header_data["email_id"] = user_obj.email
-        return self.prepare_response(status_code=status.HTTP_200_OK, params_data=header_data)
-
-    @staticmethod
-    def prepare_response(status_code, error_msg=None, params_data=None):
-        frontend_url = settings.FRONTEND_CALLBACK_URL  # Make sure to set this in your Django settings
-
-        # Initialize query parameters with status_code
-        query_params = {'status_code': status_code}
-
-        # Add error_msg to query parameters if provided
-        if error_msg:
-            query_params['error'] = error_msg
-
-        # Add additional parameters from params_data if provided
-        if params_data:
-            query_params.update(params_data)
-
-        # Create the query string from query_params
-        query_string = urlencode(query_params)
-
-        # Append the query string to the frontend URL
-        redirect_url = f"{frontend_url}?{query_string}"
-
-        # Create the HttpResponseRedirect with the modified URL
-        response = HttpResponseRedirect(redirect_url)
-
-        return response
+        auth_data = generate_auth_data(request, user_obj)
+        return response.Ok(auth_data)
 
     @action(methods=['GET'], detail=False)
     def user_clone(self, request):
