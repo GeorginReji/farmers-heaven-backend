@@ -78,7 +78,7 @@ class UserViewSet(ModelViewSet):
     def oauth_start(self, request):
         authorize_url = AuthOAuth.make_authorize_url()
         # print(authorize_url)
-        return redirect(authorize_url)
+        return response.Ok({"url": authorize_url})
 
     @swagger_auto_schema(
         method="get",
