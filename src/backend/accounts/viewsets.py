@@ -87,8 +87,6 @@ class UserViewSet(ModelViewSet):
         manual_parameters=[
             openapi.Parameter('code', openapi.IN_QUERY, description="code for verifying the oauth login",
                               type=openapi.TYPE_STRING),
-            openapi.Parameter('state', openapi.IN_QUERY, description="state containing provider information",
-                              type=openapi.TYPE_STRING),
         ],
         responses={
             302: 'Redirect with token',
