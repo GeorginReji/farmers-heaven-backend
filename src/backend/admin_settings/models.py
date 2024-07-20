@@ -71,6 +71,7 @@ class ActivityLog(TimeStampedModel):
 
 class ProductImages(TimeStampedModel):
     image = models.CharField(blank=True, null=True, max_length=1024)
+    is_thumbnail = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
 
 

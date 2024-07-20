@@ -146,6 +146,7 @@ class ProductImagesSerializer(ModelSerializer):
 
 class ProductsSerializer(ModelSerializer):
     images = ProductImagesSerializer(many=True)
+    thumbnail = serializers.SerializerMethodField(required=False)
     category_data = serializers.SerializerMethodField(required=False)
 
     class Meta:
@@ -176,6 +177,11 @@ class ProductsSerializer(ModelSerializer):
         instance.images.set(images_values)
         instance.save()
         return instance
+
+    @staticmethod
+    def get_thumbnail(obj):
+        thumbnail_obj = obj.images.filter(is_thumbnail=True).first()
+        return ProductImagesSerializer(thumbnail_obj).data if thumbnail_obj else None
 
     @staticmethod
     def get_category_data(obj):
