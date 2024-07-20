@@ -180,7 +180,6 @@ class ProductsSerializer(ModelSerializer):
 
     @staticmethod
     def get_thumbnail(obj):
-        # getting thumbnail image
         thumbnail_obj = obj.images.filter(is_thumbnail=True).first()
         return ProductImagesSerializer(thumbnail_obj).data if thumbnail_obj else None
 
