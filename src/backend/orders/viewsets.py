@@ -46,7 +46,7 @@ class OrderViewSet(ModelViewSet):
         operation_description='',
         response=CartSerializer
     )
-    @action(methods=['GET', 'POST', 'PUT'], detail=False, queryset=Cart, filterset_class=CartFilter)
+    @action(methods=['GET', 'POST', 'PUT'], detail=False, queryset=Cart.objects.all(), filterset_class=CartFilter)
     def cart(self, request):
         if request.method == "GET":
             queryset = Cart.objects.filter(user=request.user.id, is_active=True)
@@ -81,7 +81,7 @@ class OrderViewSet(ModelViewSet):
         operation_description='',
         response=OrderSerializer
     )
-    @action(methods=['GET', 'POST', 'PUT'], detail=False, queryset=Order, filterset_class=OrderFilter)
+    @action(methods=['GET', 'POST', 'PUT'], detail=False, queryset=Order.objects.all(), filterset_class=OrderFilter)
     def make_order(self, request):
         if request.method == "GET":
             queryset = Order.objects.filter(user=request.user.id, is_active=True)
