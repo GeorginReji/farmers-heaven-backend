@@ -39,10 +39,10 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('undefinedfh-api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('undefinedfh-api/v1/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
-    path('undefinedfh-api/v1/logout/', TokenBlacklistView.as_view(), name='token_blacklist'),
-    path('undefinedfh-api/v1/', include(restricted_router.urls)),
+    path('fh-api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('fh-api/v1/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    path('fh-api/v1/logout/', TokenBlacklistView.as_view(), name='token_blacklist'),
+    path('fh-api/v1/', include(restricted_router.urls)),
 ]
 
 if settings.DEBUG:
