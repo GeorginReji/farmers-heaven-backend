@@ -19,6 +19,18 @@ class CartSerializer(ModelSerializer):
         model = Cart
         fields = '__all__'
 
+    def create(self, validated_data):
+        user = validated_data.get('user')
+        product = validated_data.get('product')
+        quantity = validated_data.get('quantity', 1)
+        old_instance = Cart.objects.filter(user=user, product=product, is_active=True).first()
+        if old_instance:
+            old_instance.quantity = old_instance.quantity + quantity
+            old_instance.save()
+            return Cart.objects.filter(id=old_instance.id).first()
+        instance = Cart.objects.create(**validated_data)
+        return instance
+
     @staticmethod
     def get_product_data(obj):
         return ProductsSerializer(obj.product).data if obj.product else None

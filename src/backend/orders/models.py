@@ -11,7 +11,7 @@ class Cart(TimeStampedModel):
                              related_name='cart_user')
     product = models.ForeignKey(Products, blank=True, null=True, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField(default=1)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
 
 class OrderProductAmount(TimeStampedModel):
@@ -27,7 +27,7 @@ class Order(TimeStampedModel):
     items = models.ManyToManyField(OrderProductAmount, blank=True)
     total_amount = models.PositiveIntegerField(blank=True, null=True)
     status = models.CharField(max_length=255, choices=ORDER_STATUS, default=CREATED)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = 'Order'
