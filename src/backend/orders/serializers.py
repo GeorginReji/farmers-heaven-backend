@@ -19,6 +19,12 @@ class CartSerializer(ModelSerializer):
         model = Cart
         fields = '__all__'
 
+    def validate(self, data):
+        product = data.get('product', None)
+        if not product:
+            raise serializers.ValidationError({"detail": "product is required."})
+        return data
+
     def create(self, validated_data):
         user = validated_data.get('user')
         product = validated_data.get('product')
