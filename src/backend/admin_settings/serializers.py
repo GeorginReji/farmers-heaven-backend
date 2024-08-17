@@ -144,6 +144,20 @@ class ProductImagesSerializer(ModelSerializer):
         return get_presigned_url(obj.image) if obj.image else None
 
 
+class ProductsBasicSerializer(ModelSerializer):
+    thumbnail = serializers.SerializerMethodField(required=False)
+
+    class Meta:
+        model = Products
+        fields = ('name', 'price', 'stock', 'thumbnail')
+
+    @staticmethod
+    def get_thumbnail(obj):
+        # getting thumbnail image
+        thumbnail_obj = obj.images.filter(is_thumbnail=True).first()
+        return ProductImagesSerializer(thumbnail_obj).data if thumbnail_obj else None
+
+
 class ProductsSerializer(ModelSerializer):
     images = ProductImagesSerializer(many=True)
     thumbnail = serializers.SerializerMethodField(required=False)

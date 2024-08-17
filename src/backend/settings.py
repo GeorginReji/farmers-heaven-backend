@@ -51,6 +51,7 @@ LIBS = (
 APPS = (
     'backend.accounts',
     'backend.admin_settings',
+    'backend.orders',
 )
 
 INSTALLED_APPS = DJANGO_APPS + LIBS + APPS
