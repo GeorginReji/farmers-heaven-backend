@@ -22,3 +22,4 @@ class OrderPermissions(ResourcePermission):
     list_perms = IsSuperUser() | IsAuthenticated() | AllOnlyGetPerm()
     order_perms = IsSuperUser() | IsAuthenticated()
     cart_perms = IsSuperUser() | IsAuthenticated()
+    make_order_perms = IsSuperUser() | IsAuthenticated()

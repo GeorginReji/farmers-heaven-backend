@@ -69,19 +69,12 @@ class OrderViewSet(ModelViewSet):
         response=OrderSerializer
     )
     @swagger_auto_schema(
-        method="put",
-        operation_summary='Update Order',
-        operation_description='.',
-        request_body=OrderSerializer,
-        response=OrderSerializer
-    )
-    @swagger_auto_schema(
         method="get",
         operation_summary='List of Order',
         operation_description='',
         response=OrderSerializer
     )
-    @action(methods=['GET', 'POST', 'PUT'], detail=False, queryset=Order.objects.all(), filterset_class=OrderFilter)
+    @action(methods=['GET', 'POST'], detail=False, queryset=Order.objects.all(), filterset_class=OrderFilter)
     def make_order(self, request):
         if request.method == "GET":
             queryset = Order.objects.filter(user=request.user.id, is_active=True)
@@ -93,5 +86,6 @@ class OrderViewSet(ModelViewSet):
             return response.Ok(OrderSerializer(queryset, many=True).data)
         else:
             request_data = request.data.copy()
+            request_data.pop('id', None)
             request_data['user'] = request.user.pk
             return response.Ok(create_update_record(request_data, OrderSerializer, Order))

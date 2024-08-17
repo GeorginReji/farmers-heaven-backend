@@ -1,15 +1,68 @@
 from rest_framework import serializers
 
-from .models import Cart, Order
-from ..admin_settings.serializers import ProductsSerializer
+from .models import Cart, Order, OrderProductAmount
+from ..admin_settings.serializers import StateBasicSerializer, CityBasicSerializer, \
+    ProductsBasicSerializer
 
 from ..base.serializers import ModelSerializer
 
 
+class OrderProductAmountSerializer(ModelSerializer):
+    product_data = serializers.SerializerMethodField(required=False)
+
+    class Meta:
+        model = OrderProductAmount
+        fields = '__all__'
+        extra_kwargs = {
+            'amount': {'read_only': True}, 'product': {'required': True},
+            'quantity': {'required': True}
+        }
+
+    @staticmethod
+    def get_product_data(obj):
+        return ProductsBasicSerializer(obj.product).data if obj.product else None
+
+
 class OrderSerializer(ModelSerializer):
+    state_data = serializers.SerializerMethodField(required=False)
+    city_data = serializers.SerializerMethodField(required=False)
+    items = OrderProductAmountSerializer(many=True, required=False)
+
     class Meta:
         model = Order
         fields = '__all__'
+        extra_kwargs = {
+            'total_amount': {'read_only': True}, 'status': {'read_only': True},
+            'address': {'required': True}, 'mobile': {'required': True}, 'pincode': {'required': True}
+        }
+
+    def create(self, validated_data):
+        total_amount = 0
+
+        items = validated_data.pop('items', [])
+        items_values = []
+        for record in items:
+            record.pop('id', None)
+
+            product = record.get('product', None)
+            product_price = product.price or 0
+            record['amount'] = product_price
+            total_amount += product_price
+
+            items_values.append(OrderProductAmount.objects.create(**record).id)
+        validated_data['total_amount'] = total_amount
+        instance = Order.objects.create(**validated_data)
+        instance.items.set(items_values)
+        instance.save()
+        return instance
+
+    @staticmethod
+    def get_state_data(obj):
+        return StateBasicSerializer(obj.state).data if obj.state else None
+
+    @staticmethod
+    def get_city_data(obj):
+        return CityBasicSerializer(obj.city).data if obj.city else None
 
 
 class CartSerializer(ModelSerializer):
@@ -39,4 +92,4 @@ class CartSerializer(ModelSerializer):
 
     @staticmethod
     def get_product_data(obj):
-        return ProductsSerializer(obj.product).data if obj.product else None
+        return ProductsBasicSerializer(obj.product).data if obj.product else None
