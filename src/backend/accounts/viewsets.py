@@ -106,9 +106,10 @@ class UserViewSet(ModelViewSet):
             return response.BadRequest({"detail": detail})
 
         email = detail.get('email')
+        name = detail.get('name', None)
         user_obj = User.objects.filter(email=email, is_active=True).first()
         if not user_obj:
-            user_obj = User.objects.create(email=email)
+            user_obj = User.objects.create(email=email, first_name=name)
             user_obj.set_password(generate_password())
             user_obj.save()
 
