@@ -56,7 +56,7 @@ class AuthOAuth:
 
             access_token = cls.get_access_token(data, GOOGLE_ACCESS_TOKEN_URL)
             user_info = cls.get_user_info(access_token, GOOGLE_USER_INFO_URL)
-            return True, {"email": user_info.get("email", None)}
+            return True, {"email": user_info.get("email", None), "name": user_info.get("name", "")}
         except Exception as e:
             print(e)
             return False, "invalid request"
