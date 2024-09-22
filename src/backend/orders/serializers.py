@@ -9,6 +9,7 @@ from ..base.serializers import ModelSerializer
 
 class OrderProductAmountSerializer(ModelSerializer):
     product_data = serializers.SerializerMethodField(required=False)
+    product_item_data = serializers.SerializerMethodField(required=False)
 
     class Meta:
         model = OrderProductAmount
@@ -22,9 +23,12 @@ class OrderProductAmountSerializer(ModelSerializer):
     def get_product_data(obj):
         return ProductsBasicSerializer(obj.product).data if obj.product else None
 
+    @staticmethod
+    def get_product_item_data(obj):
+        return ProductItemSerializer(obj.product_item).data if obj.product_item else None
+
 
 class OrderSerializer(ModelSerializer):
-    product_item_data = serializers.SerializerMethodField(required=False)
     state_data = serializers.SerializerMethodField(required=False)
     city_data = serializers.SerializerMethodField(required=False)
     items = OrderProductAmountSerializer(many=True, required=False)
@@ -34,6 +38,7 @@ class OrderSerializer(ModelSerializer):
         fields = '__all__'
         extra_kwargs = {
             'total_amount': {'read_only': True}, 'status': {'read_only': True},
+            'product': {'required': True}, 'product_item': {'required': True},
             'address': {'required': True}, 'mobile': {'required': True}, 'pincode': {'required': True}
         }
 
@@ -47,11 +52,12 @@ class OrderSerializer(ModelSerializer):
             record.pop('id', None)
 
             product = record.get('product', None)
+            product_item = record.get('product_item', None)
             product_list.append(product)
 
-            product_price = product.price or 0
-            record['amount'] = product_price
-            total_amount += product_price
+            product_item_price = product_item.price or 0
+            record['amount'] = product_item_price
+            total_amount += product_item_price
 
             items_values.append(OrderProductAmount.objects.create(**record).id)
         validated_data['total_amount'] = total_amount
@@ -62,10 +68,6 @@ class OrderSerializer(ModelSerializer):
         # clear cart
         Cart.objects.filter(user=user, product__in=product_list, is_active=True).update(is_active=False)
         return instance
-
-    @staticmethod
-    def get_product_item_data(obj):
-        return ProductItemSerializer(obj.product_item).data if obj.product_item else None
 
     @staticmethod
     def get_state_data(obj):
@@ -83,6 +85,9 @@ class CartSerializer(ModelSerializer):
     class Meta:
         model = Cart
         fields = '__all__'
+        extra_kwargs = {
+            'product': {'required': True}, 'product_item': {'required': True}
+        }
 
     def validate(self, data):
         product = data.get('product', None)

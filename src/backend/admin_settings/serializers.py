@@ -145,7 +145,6 @@ class ProductImagesSerializer(ModelSerializer):
 
 
 class ProductItemSerializer(ModelSerializer):
-    download_url = serializers.SerializerMethodField(required=False)
 
     class Meta:
         model = ProductItem
@@ -157,7 +156,7 @@ class ProductsBasicSerializer(ModelSerializer):
 
     class Meta:
         model = Products
-        fields = ('name', 'price', 'stock', 'thumbnail')
+        fields = ('name', 'stock', 'thumbnail')
 
     @staticmethod
     def get_thumbnail(obj):
