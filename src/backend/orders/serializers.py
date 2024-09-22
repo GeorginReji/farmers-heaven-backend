@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from .models import Cart, Order, OrderProductAmount
 from ..admin_settings.serializers import StateBasicSerializer, CityBasicSerializer, \
-    ProductsBasicSerializer
+    ProductsBasicSerializer, ProductItemSerializer
 
 from ..base.serializers import ModelSerializer
 
@@ -24,6 +24,7 @@ class OrderProductAmountSerializer(ModelSerializer):
 
 
 class OrderSerializer(ModelSerializer):
+    product_item_data = serializers.SerializerMethodField(required=False)
     state_data = serializers.SerializerMethodField(required=False)
     city_data = serializers.SerializerMethodField(required=False)
     items = OrderProductAmountSerializer(many=True, required=False)
@@ -63,6 +64,10 @@ class OrderSerializer(ModelSerializer):
         return instance
 
     @staticmethod
+    def get_product_item_data(obj):
+        return ProductItemSerializer(obj.product_item).data if obj.product_item else None
+
+    @staticmethod
     def get_state_data(obj):
         return StateBasicSerializer(obj.state).data if obj.state else None
 
@@ -73,6 +78,7 @@ class OrderSerializer(ModelSerializer):
 
 class CartSerializer(ModelSerializer):
     product_data = serializers.SerializerMethodField(required=False)
+    product_item_data = serializers.SerializerMethodField(required=False)
 
     class Meta:
         model = Cart
@@ -99,3 +105,7 @@ class CartSerializer(ModelSerializer):
     @staticmethod
     def get_product_data(obj):
         return ProductsBasicSerializer(obj.product).data if obj.product else None
+
+    @staticmethod
+    def get_product_item_data(obj):
+        return ProductItemSerializer(obj.product_item).data if obj.product_item else None

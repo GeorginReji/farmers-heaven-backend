@@ -56,6 +56,5 @@ class ProductsFilter(django_filters.FilterSet):
             'name': ['exact', 'icontains'],
             'category': ['exact'],
             'description': ['exact', 'icontains'],
-            'price': ['exact', 'lt', 'lte', 'gt', 'gte'],
             'stock': ['exact', 'lt', 'lte', 'gt', 'gte'],
         }
