@@ -76,8 +76,8 @@ class ProductImages(TimeStampedModel):
 
 
 class ProductItem(TimeStampedModel):
+    name = models.CharField(blank=True, null=True, max_length=1024)
     price = models.PositiveIntegerField(blank=True, null=True)
-    quantity = models.PositiveIntegerField(blank=True, null=True)
     is_active = models.BooleanField(default=False)
 
 
