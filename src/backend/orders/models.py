@@ -20,7 +20,7 @@ class OrderProductAmount(TimeStampedModel):
     product_item = models.ForeignKey(ProductItem, blank=True, null=True, on_delete=models.PROTECT)
     amount = models.PositiveIntegerField(blank=True, null=True)
     quantity = models.PositiveIntegerField(blank=True, null=True)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
 
 class Order(TimeStampedModel):
