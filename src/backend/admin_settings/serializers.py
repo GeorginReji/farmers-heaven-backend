@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import DynamicSettings, Country, State, City, UploadedDocument, Products, ProductImages, ProductItem
-from .services import delete_child, get_presigned_url
+from .services import delete_child, get_presigned_url, create_update_s3_record
 
 from ..base.serializers import ModelSerializer
 from ..base.services import create_update_manytomany_record
@@ -186,7 +186,12 @@ class ProductsSerializer(ModelSerializer):
 
     def create(self, validated_data):
         items_values = create_update_manytomany_record(validated_data.pop("items", []), ProductItem)
-        images_values = create_update_manytomany_record(validated_data.pop("images", []), ProductImages)
+        images_values = []
+        for record in validated_data.pop("images", []):
+            record.pop('id', None)
+            _, record['image'] = create_update_s3_record(to_path=validated_data.get('image', None))
+            images_values.append(ProductImages.objects.create(**record).id)
+
         instance = Products.objects.create(**validated_data)
         instance.items.set(items_values)
         instance.images.set(images_values)
@@ -195,8 +200,17 @@ class ProductsSerializer(ModelSerializer):
 
     def update(self, instance, validated_data):
         items_values = create_update_manytomany_record(validated_data.pop("items", []), ProductItem, instance.items)
-        images_values = create_update_manytomany_record(validated_data.pop("images", []), ProductImages,
-                                                        instance.images)
+        for record in instance.images:
+            create_update_s3_record(record.image)
+            record.is_active = False
+            record.save()
+
+        images_values = []
+        for record in validated_data.pop("images", []):
+            record.pop('id', None)
+            _, record['image'] = create_update_s3_record(to_path=validated_data.get('image', None))
+            images_values.append(ProductImages.objects.create(**record).id)
+
         Products.objects.filter(id=instance.id).update(**validated_data)
         instance = Products.objects.filter(id=instance.id).first()
         instance.items.set(items_values)
