@@ -201,7 +201,6 @@ class ProductsSerializer(ModelSerializer):
     def update(self, instance, validated_data):
         items_values = create_update_manytomany_record(validated_data.pop("items", []), ProductItem, instance.items)
         for record in instance.images:
-            create_update_s3_record(record.image)
             record.is_active = False
             record.save()
 
