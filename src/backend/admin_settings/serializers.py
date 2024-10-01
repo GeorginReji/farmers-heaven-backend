@@ -189,7 +189,7 @@ class ProductsSerializer(ModelSerializer):
         images_values = []
         for record in validated_data.pop("images", []):
             record.pop('id', None)
-            _, record['image'] = create_update_s3_record(to_path=validated_data.get('image', None))
+            _, record['image'] = create_update_s3_record(to_path=record.get('image', None))
             images_values.append(ProductImages.objects.create(**record).id)
 
         instance = Products.objects.create(**validated_data)

@@ -210,21 +210,21 @@ class DynamicSettingsViewSet(ModelViewSet):
 
     @swagger_auto_schema(
         method="post",
-        operation_summary='Add City',
-        operation_description='Add City',
+        operation_summary='Add Product',
+        operation_description='.',
         request_body=ProductsSerializer,
         response=ProductsSerializer
     )
     @swagger_auto_schema(
         method="put",
-        operation_summary='Update City.',
+        operation_summary='Update Product.',
         operation_description='.',
         request_body=ProductsSerializer,
         response=ProductsSerializer
     )
     @swagger_auto_schema(
         method="get",
-        operation_summary='List of City',
+        operation_summary='List of Products',
         operation_description='',
         response=ProductsSerializer
     )
