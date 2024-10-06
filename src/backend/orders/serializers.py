@@ -3,7 +3,6 @@ from rest_framework import serializers
 from .models import Cart, Order, OrderProductAmount
 from ..admin_settings.serializers import StateBasicSerializer, CityBasicSerializer, \
     ProductsBasicSerializer, ProductItemSerializer
-
 from ..base.serializers import ModelSerializer
 
 
@@ -53,6 +52,8 @@ class OrderSerializer(ModelSerializer):
 
             product = record.get('product', None)
             product_item = record.get('product_item', None)
+            if not product_item:
+                raise serializers.ValidationError("product item is required")
             product_list.append(product)
 
             product_item_price = product_item.price or 0
@@ -91,17 +92,20 @@ class CartSerializer(ModelSerializer):
 
     def validate(self, data):
         product = data.get('product', None)
-        if not product:
-            raise serializers.ValidationError({"detail": "product is required."})
+        product_item = data.get('product_item', None)
+        if not product or not product_item:
+            raise serializers.ValidationError({"detail": "product and product_item is required."})
         return data
 
     def create(self, validated_data):
         user = validated_data.get('user')
         product = validated_data.get('product')
+        product_item = validated_data.get('product_item')
         quantity = validated_data.get('quantity', 1)
-        old_instance = Cart.objects.filter(user=user, product=product, is_active=True).first()
+        old_instance = Cart.objects.filter(
+            user=user, product=product, product_item=product_item, is_active=True).first()
         if old_instance:
-            old_instance.quantity = old_instance.quantity + quantity
+            old_instance.quantity = quantity
             old_instance.save()
             return Cart.objects.filter(id=old_instance.id).first()
         instance = Cart.objects.create(**validated_data)
