@@ -111,6 +111,11 @@ class CartSerializer(ModelSerializer):
         instance = Cart.objects.create(**validated_data)
         return instance
 
+    def update(self, instance, validated_data):
+        Cart.objects.filter(is_active=True, id=instance.pk).update(**validated_data)
+        instance = Cart.objects.filter(id=instance.pk).first()
+        return instance
+
     @staticmethod
     def get_product_data(obj):
         return ProductsBasicSerializer(obj.product).data if obj.product else None
