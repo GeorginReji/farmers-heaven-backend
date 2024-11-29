@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 
 from .constants import ORDER_STATUS, CREATED
-from ..admin_settings.models import Products, State, City
+from ..admin_settings.models import Products, State, City, ProductItem
 from ..base.models import TimeStampedModel
 
 
@@ -10,15 +10,17 @@ class Cart(TimeStampedModel):
     user = models.ForeignKey(get_user_model(), blank=True, null=True, on_delete=models.PROTECT,
                              related_name='cart_user')
     product = models.ForeignKey(Products, blank=True, null=True, on_delete=models.PROTECT)
+    product_item = models.ForeignKey(ProductItem, blank=True, null=True, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField(default=1)
     is_active = models.BooleanField(default=True)
 
 
 class OrderProductAmount(TimeStampedModel):
     product = models.ForeignKey(Products, blank=True, null=True, on_delete=models.PROTECT)
+    product_item = models.ForeignKey(ProductItem, blank=True, null=True, on_delete=models.PROTECT)
     amount = models.PositiveIntegerField(blank=True, null=True)
     quantity = models.PositiveIntegerField(blank=True, null=True)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
 
 class Order(TimeStampedModel):

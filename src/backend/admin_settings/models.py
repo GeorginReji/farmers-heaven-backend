@@ -66,13 +66,19 @@ class ActivityLog(TimeStampedModel):
     action_on = models.CharField(blank=True, null=True, max_length=1024)
     db_table = models.CharField(blank=True, null=True, max_length=1024)
     action_type = models.CharField(blank=True, null=True, max_length=1024)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
 
 class ProductImages(TimeStampedModel):
     image = models.CharField(blank=True, null=True, max_length=1024)
     is_thumbnail = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+
+
+class ProductItem(TimeStampedModel):
+    name = models.CharField(blank=True, null=True, max_length=1024)
+    price = models.PositiveIntegerField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
 
 
 class Products(TimeStampedModel):
@@ -80,6 +86,6 @@ class Products(TimeStampedModel):
     description = models.TextField(blank=True, null=True)
     category = models.ForeignKey(DynamicSettings, blank=True, null=True, on_delete=models.PROTECT)
     images = models.ManyToManyField(ProductImages, blank=True)
-    price = models.PositiveIntegerField(blank=True, null=True)
+    items = models.ManyToManyField(ProductItem, blank=True)
     stock = models.PositiveIntegerField(blank=True, null=True)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)

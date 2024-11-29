@@ -1,8 +1,7 @@
 from rest_framework import serializers
 
-from .models import DynamicSettings, Country, State, City, UploadedDocument, Products, ProductImages
-from .services import delete_child, get_presigned_url
-
+from .models import DynamicSettings, Country, State, City, UploadedDocument, Products, ProductImages, ProductItem
+from .services import delete_child, get_presigned_url, create_update_s3_record
 from ..base.serializers import ModelSerializer
 from ..base.services import create_update_manytomany_record
 
@@ -133,15 +132,29 @@ class DynamicSettingsValueSerializer(ModelSerializer):
 
 
 class ProductImagesSerializer(ModelSerializer):
+    id = serializers.IntegerField(required=False, write_only=True)
     download_url = serializers.SerializerMethodField(required=False)
 
     class Meta:
         model = ProductImages
         fields = '__all__'
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # customize 'id' field
+        representation['id'] = instance.id
+        return representation
+
     @staticmethod
     def get_download_url(obj):
         return get_presigned_url(obj.image) if obj.image else None
+
+
+class ProductItemSerializer(ModelSerializer):
+
+    class Meta:
+        model = ProductItem
+        fields = '__all__'
 
 
 class ProductsBasicSerializer(ModelSerializer):
@@ -149,7 +162,7 @@ class ProductsBasicSerializer(ModelSerializer):
 
     class Meta:
         model = Products
-        fields = ('name', 'price', 'stock', 'thumbnail')
+        fields = ('name', 'stock', 'thumbnail')
 
     @staticmethod
     def get_thumbnail(obj):
@@ -159,6 +172,7 @@ class ProductsBasicSerializer(ModelSerializer):
 
 
 class ProductsSerializer(ModelSerializer):
+    items = ProductItemSerializer(many=True)
     images = ProductImagesSerializer(many=True)
     thumbnail = serializers.SerializerMethodField(required=False)
     category_data = serializers.SerializerMethodField(required=False)
@@ -177,17 +191,39 @@ class ProductsSerializer(ModelSerializer):
         return data
 
     def create(self, validated_data):
-        images_values = create_update_manytomany_record(validated_data.pop("images", []), ProductImages)
+        items_values = create_update_manytomany_record(validated_data.pop("items", []), ProductItem)
+        images_values = []
+        for record in validated_data.pop("images", []):
+            record.pop('id', None)
+            _, record['image'] = create_update_s3_record(to_path=record.get('image', None))
+            images_values.append(ProductImages.objects.create(**record).id)
+
         instance = Products.objects.create(**validated_data)
+        instance.items.set(items_values)
         instance.images.set(images_values)
         instance.save()
         return instance
 
     def update(self, instance, validated_data):
-        images_values = create_update_manytomany_record(validated_data.pop("images", []), ProductImages,
-                                                        instance.images)
+        items_values = create_update_manytomany_record(validated_data.pop("items", []), ProductItem, instance.items)
+        images_values = []
+        for record in validated_data.pop("images", []):
+            record_id = record.pop('id', None)
+            record_is_active = record.pop('is_active', True)
+            if not record_id:
+                _, record['image'] = create_update_s3_record(to_path=record.get('image', None))
+                images_values.append(ProductImages.objects.create(**record).id)
+            elif record_id and not record_is_active:
+                old_obj = ProductImages.objects.filter(id=record_id).first()
+                create_update_s3_record(from_path=old_obj.image)
+                old_obj.is_active = False
+                old_obj.save()
+            else:
+                images_values.append(record_id)
+
         Products.objects.filter(id=instance.id).update(**validated_data)
         instance = Products.objects.filter(id=instance.id).first()
+        instance.items.set(items_values)
         instance.images.set(images_values)
         instance.save()
         return instance

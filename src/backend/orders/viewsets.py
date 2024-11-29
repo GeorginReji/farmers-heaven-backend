@@ -77,7 +77,10 @@ class OrderViewSet(ModelViewSet):
     @action(methods=['GET', 'POST'], detail=False, queryset=Order.objects.all(), filterset_class=OrderFilter)
     def make_order(self, request):
         if request.method == "GET":
-            queryset = Order.objects.filter(user=request.user.id, is_active=True)
+            if request.user.is_superuser:
+                queryset = Order.objects.filter(is_active=True)
+            else:
+                queryset = Order.objects.filter(user=request.user.id, is_active=True)
             self.filterset_class = OrderFilter
             queryset = self.filter_queryset(queryset)
             page = self.paginate_queryset(queryset)
